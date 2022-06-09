@@ -1,0 +1,85 @@
+---
+layout: templates/3
+slug: modules/module_103/index
+response_headers: >
+  {
+    "X-Frame-Options": null
+  }
+authorization_policies:
+ - modules/siteglide_system/module_is_in_admin
+---
+{% include 'modules/siteglide_system/constants' -%}
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.js-example-basic-multiple').select2();
+  });
+  
+  function approve(id) {
+    $.get("/api/approved",{auth: "D984E5F4B035400A91872752CEEC10160CC4374E", id: id, secure_zones: $('select[data-id="'+ id +'"]').val()}).done(function(res){
+      if (res.success) {
+        $('[data-row-id="'+ id +'"]').fadeOut();
+      } else {
+        alert(res.message);
+      }
+    }).fail(function() {
+      alert("Something went wrong, please try again later");
+    })
+  }
+</script>
+
+{% content_for 'hero' %}
+<div class="bg-coolGray-50">
+  <div style="background: linear-gradient(#0006,#0006), url('{{ 'flex-ui-assets/images/blog-content/content-photo1.jpg' | asset_url }}'); background-position: center; background-size: cover;" class="w-full h-96"></div>
+  <section class="relative pb-16">
+		<div class="container px-4 mx-auto text-center">
+			<div class="relative py-16 px-4 md:px-24 bg-coolGray-900 rounded-xl mb-8 -my-52">
+				<div class="relative flex flex-wrap items-center -mx-4">
+					<div class="w-full px-4 mb-14 lg:mb-0">
+						<h2 class="mb-4 text-3xl md:text-4xl font-heading font-bold text-white leading-snug">Approval</h2>
+						<p class="text-lg md:text-xl font-heading font-medium text-coolGray-400 mb-8">Area to approve or deny newly registered users to the site</p>
+					</div>
+				</div>
+			</div>
+			{% graphql allSecureZones = "allSecureZones" %}
+			{% assign secure_zones = allSecureZones.records.results %}
+			{% graphql approval = "approval" %}
+			{% assign users = approval.users.results %}
+			<div class="overflow-x-auto">
+  			<table class="w-full table-fixed overflow-x-auto">
+  			  <thead>
+  			    <tr>
+  			      <th class="px-4 py-6 bg-blue-500">Name</th>
+  			      <th class="px-4 py-6 bg-blue-500">Email</th>
+  			      <th class="px-4 py-6 bg-blue-500">Time of registration</th>
+  			      <th colspan="2" class="px-4 py-6 bg-blue-500">Secure Zones</th>
+  			      <th class="px-4 py-6 bg-blue-500">&nbsp;</th>
+  			    </tr>
+  			  </thead>
+  			  <tbody>
+  			    {% for user in users %}
+    			    <tr data-row-id="{{user.id}}">
+    			      <td class="px-4 py-6 {% unless forloop.last %}border-solid border-b-2 border-coolGray-50{% endunless %}">{{user.name}}</td>
+    			      <td class="px-4 py-6 {% unless forloop.last %}border-solid border-b-2 border-coolGray-50{% endunless %}">{{user.email}}</td>
+    			      <td class="px-4 py-6 {% unless forloop.last %}border-solid border-b-2 border-coolGray-50{% endunless %}">{{user.created_at | date: "%d/%m/%Y %H:%M"}}</td>
+    			      <td colspan="2" class="px-4 py-6 text-left {% unless forloop.last %}border-solid border-b-2 border-coolGray-50{% endunless %}">
+    			        <select class="js-example-basic-multiple w-full" name="states[]" multiple="multiple" data-id="{{user.id}}">
+    			          {% for secure_zone in secure_zones %}
+    			            {% if secure_zone.id != "23" %}
+                        <option {% if user.properties.secure_zones contains secure_zone.id %}selected{% endif %} value="{{secure_zone.id}}">{{secure_zone.name}}</option>
+                      {% endif %}
+                    {% endfor %}
+                  </select>
+                </td>
+    			      <td class="px-4 py-6 {% unless forloop.last %}border-solid border-b-2 border-coolGray-50{% endunless %}"><button class="inline-block py-2 px-4 text-sm leading-5 text-blue-50 bg-blue-500 hover:bg-blue-600 font-medium focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 rounded-md mr-4" onclick="approve('{{user.id}}')">Approve</button></td>
+    			    </tr>
+    			   {% endfor %}
+  			  </tbody>
+  			</table>
+  		</div>
+		</div>
+	</section>
+</div>
+{% endcontent_for %}
