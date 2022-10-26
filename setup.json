@@ -1,9 +1,8 @@
 [
 	{
 		"id": 103,
-		"use_standard_fields": false,
-		"module_name": {
-			"value": "Polar Bear Design Approval Module"
-		}
+		"type": "module",
+		"name": "Polar Bear Design Approval Module",
+		"use_standard_fields": false
 	}
 ]
